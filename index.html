@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>2027 釜山漫遊行線上導覽</title>
+  <style>
+    :root {
+      --primary: #1565c0;
+      --primary-light: #e3f2fd;
+      --accent: #e65100;
+      --accent-light: #fff3e0;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text: #212121;
+      --text-sub: #546e7a;
+      --border: #e0e0e0;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 16px 12px 100px 12px;
+      display: flex;
+      justify-content: center;
+    }
+    .mobile-app {
+      width: 100%;
+      max-width: 480px;
+    }
+    header {
+      text-align: center;
+      padding: 16px 12px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 6px 0;
+      font-size: 21px;
+      color: var(--primary);
+    }
+    .date-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    
+    /* 步驟行程卡片 */
+    .step-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .step-badge {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    .step-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0 0 12px 0;
+      line-height: 1.4;
+      color: #1a252f;
+    }
+    .meta-box {
+      background: #f8fafc;
+      border: 1px solid #edf2f7;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+    .meta-item {
+      display: flex;
+      margin-bottom: 6px;
+    }
+    .meta-item:last-child {
+      margin-bottom: 0;
+    }
+    .meta-label {
+      width: 85px;
+      font-weight: 700;
+      color: var(--text-sub);
+      flex-shrink: 0;
+    }
+    .meta-val {
+      color: #263238;
+      font-weight: 600;
+    }
+    .desc-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #37474f;
+      margin: 12px 0;
+    }
+
+    /* 9:16 直式影音封面與播放卡 */
+    .video-card-box {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      margin: 14px auto;
+      aspect-ratio: 9 / 16;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #111;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    .video-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .video-card-box:active .video-cover-img {
+      transform: scale(0.96);
+    }
+    .play-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.3) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      padding: 20px;
+      text-align: center;
+    }
+    .play-btn-circle {
+      width: 64px;
+      height: 64px;
+      background: #ff0000;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 26px;
+      box-shadow: 0 4px 14px rgba(255,0,0,0.5);
+      margin-bottom: 12px;
+    }
+    .play-tip {
+      background: rgba(0,0,0,0.6);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    /* 前進按鈕 */
+    .next-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 16px;
+      padding: 16px 20px;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      margin-top: 18px;
+      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
+      transition: background 0.2s;
+    }
+    .next-btn:active {
+      background: #0d47a1;
+      transform: scale(0.98);
+    }
+
+    /* 決策區域 */
+    .decision-hub {
+      background: #fff8e1;
+      border: 2px dashed #ffa000;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    .decision-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #d84315;
+      text-align: center;
+      margin: 0 0 14px 0;
+    }
+    .option-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 2px solid #ffe082;
+    }
+    .option-tag {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 800;
+      background: #ffecb3;
+      color: #b78103;
+      padding: 3px 8px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+    .select-btn {
+      width: 100%;
+      background: #ff8f00;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 15px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255, 143, 0, 0.3);
+      margin-top: 10px;
+    }
+    .select-btn:active {
+      background: #e65100;
+    }
+
+    .completed-flag {
+      text-align: center;
+      font-size: 14px;
+      color: #9e9e9e;
+      margin-top: 10px;
+    }
+    .chosen-notice {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 12px;
+      font-size: 15px;
+    }
+
+    /* 播放彈跳視窗 */
+    .video-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .video-modal.active {
+      display: flex;
+    }
+    .modal-content {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 9 / 16;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .modal-content iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.8);
+      color: #000;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-app">
+  <header>
+    <h1>🇰🇷 2027 釜山行長輩行程互動導覽</h1>
+    <div class="date-badge">2027.03.11 – 03.16 ｜ 住宿：東橫INN 釜山站1號店</div>
+  </header>
+
+  <!-- 行程容器：由 JS 依序向下展開 -->
+  <div id="itinerary-timeline"></div>
+</div>
+
+<!-- 彈出播放器視窗 -->
+<div id="videoModal" class="video-modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <button class="modal-close-btn" onclick="closeModalDirect()">✕</button>
+    <iframe id="modalIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+
+<script>
+  // 完整 6 天行程資料樹
+  const workflow = {
+    // ==========================================
+    // DAY 1
+    // ==========================================
+    "d1_arrival": {
+      type: "step",
+      day: "Day 1 ｜ 抵達釜山",
+      title: "金海機場 ➔ 搭 Uber 直達飯店",
+      transport: "機場門口叫車直達 (約 35-45 分)",
+      cost: "約 20,000 韓元 / 車",
+      stay: "辦理入住、放置大行李約 20 分鐘",
+      note: "免搬行李走樓梯搭地鐵，舒適省力",
+      desc: "抵達釜山金海國際機場後，直接叫 Uber 直奔東橫 INN 釜山站 1 號店放行李，稍作梳洗休息。",
+      videoId: "zHxog7p0hJg",
+      nextBtnText: "看今晚晚餐有哪些選擇 ➔",
+      nextId: "d1_dinner_decision"
+    },
+
+    "d1_dinner_decision": {
+      type: "decision",
+      title: "🤔 請先觀賞以下 2 個晚餐選項，再點選第一天晚上想吃的！",
+      options: [
+        {
+          key: "seafood_noodle",
+          tag: "方案 A",
+          title: "🍲 草樑市場・淡菜鍋+小卷刀削麵",
+          meta: "步行 10 分 ｜ 用餐約 40~60 分 ｜ 每人約 15,000 韓元",
+          desc: "來自釜山滿滿的海味，搭配海鮮蔥煎餅與整隻小卷刀削麵，在地人都愛吃！",
+          videoId: "IjrZk-_woWU",
+          btnText: "決定了！今晚吃海味刀削麵 🍲",
+          nextId: "d1_shopping",
+          chosenLabel: "已選定：方案 A【草樑市場・淡菜鍋、刀削麵】"
+        },
+        {
+          key: "milmyeon",
+          tag: "方案 B",
+          title: "🍜 草樑小麥冷麵",
+          meta: "步行 3-5 分 ｜ 用餐約 45 分 ｜ 每人約 10,000 韓元",
+          desc: "釜山三大代表小麥冷麵名店，口感比傳統蕎麥冷麵更滑順 Q 彈。推薦冰涼水冷麵、甜辣拌冷麵，以及爆汁大蒸餃！附溫熱骨湯暖胃。",
+          videoId: "u4vWziIGDSU",
+          btnText: "決定了！今晚吃小麥冷麵 🍜",
+          nextId: "d1_shopping",
+          chosenLabel: "已選定：方案 B【草樑小麥冷麵】"
+        }
+      ]
+    },
+
+    "d1_shopping": {
+      type: "step",
+      day: "Day 1 ｜ 晚間採買",
+      title: "釜山站前大創 ＆ TOP Mart 超市",
+      transport: "站前平緩商圈步行約 6 分鐘",
+      cost: "採買水果零食約 20,000 韓元",
+      stay: "採買約 60 分鐘",
+      note: "推薦採買冬末春初盛產的大草莓",
+      desc: "在大創挑選精緻日用小物，隨後到 TOP Mart 超市買水、韓國草莓與茶飲回飯店當宵夜。",
+      videoId: "_Cj3uSmXuEw",
+      nextBtnText: "完成第一天！進入第二天行程 ➔",
+      nextId: "d2_bread_capsule"
+    },
+
+    // ==========================================
+    // DAY 2
+    // ==========================================
+    "d2_bread_capsule": {
+      type: "step",
+      day: "Day 2 ｜ 行程 1",
+      title: "搶自然島鹽麵包",
+      transport: "地鐵轉計程車至尾浦 (建議 07:45 出門)",
+      cost: "鹽麵包4入12,000 KRW ｜ 膠囊車每人約11,250 KRW",
+      stay: "搭乘膠囊車 30 分鐘平穩看海",
+      note: "高架軌道車速緩慢，坐著吹海風拍照極美",
+      desc: "搶剛出爐飄香的自然島鹽麵包，在獨立可愛的彩色膠囊列車裡邊吃邊看海，隨後抵達青沙浦平交道拍海景與天空步道。",
+      videoId: "RCOzdISxIiM",
+      nextBtnText: "去搭乘膠囊列車 ➔",
+      nextId: "d2_sky_capsule"
+    },
+
+    "d2_sky_capsule": {
+      type: "step",
+      day: "Day 2 ｜ 經典海景鐵道",
+      title: "🚟 海雲台天空膠囊列車（尾浦 ➔ 青沙浦）",
+      transport: "高架獨立軌道慢行，平穩不晃動",
+      cost: "4人獨立車廂約 45,000 韓元（每人約 11,250 韓元）",
+      stay: "搭乘約 30 分鐘（全程坐著看海）",
+      note: "車廂內有小風扇與開窗通風，全平路無階梯，非常適合長輩休息拍照",
+      desc: "行駛在 7 至 10 公尺高的濱海鐵道上，色彩繽紛的復古車廂超可愛！沿途俯瞰海天一色的蔚藍海景與迎月路步道，既浪漫又舒適愜意。",
+      videoId: "JWbLBtMSEyk",
+      nextBtnText: "抵達青沙浦！看平交道海景 ➔",
+      nextId: "d2_cheongsapo_photo"
+    },
+
+    "d2_cheongsapo_photo": {
+      type: "step",
+      day: "Day 2 ｜ 經典打卡平交道",
+      title: "📸 青沙浦平交道海景美拍 ＆ 文創紀念品店",
+      transport: "膠囊列車下車後，出站步行約 2-3 分鐘即達",
+      cost: "拍照參觀免費，文創紀念品約 5,000 - 20,000 韓元",
+      stay: "停留拍照與逛街約 40-50 分鐘",
+      note: "平交道拍攝請注意來車，別忘記走到上下都有車的取景點！",
+      desc: "走出青沙浦站，前方斜坡路正對著蔚藍大海，當海岸列車緩緩經過平交道時，畫面宛如日劇與《灌籃高手》場景！拍完照還可逛逛站旁特色文創紀念品店，挑選可愛的膠囊列車造型磁鐵、明信片與伴手禮。",
+      videoId: "6A_rdujEmZs",
+      nextBtnText: "拍完照了！午餐想吃哪間呢？ ➔",
+      nextId: "d2_beach_train_songjeong"
+    },
+// ⬇️ 第 2 天青沙浦烤扇貝午餐抉擇節點（三選一）
+    "d2_cheongsapo_lunch_decision": {
+      type: "decision",
+      title: "🤔 青沙浦平交道拍完照了！午餐烤貝名店三選一，想吃哪一家？",
+      options: [
+        {
+          key: "sumin",
+          tag: "方案 A",
+          title: "🔥 秀敏家（수민이네）・青沙浦元祖烤貝名店",
+          meta: "平交道步行 5 分 ｜ 用餐約 60-80 分 ｜ 每人約 28,000 - 35,000 韓元",
+          desc: "各大電視台爭相報導的元祖級始祖老店！炭火直烤巨型大扇貝與鮮活鰻魚，淋上特製辣醬與奶油起司鋁箔盒一起滾煮，香氣極致濃郁！",
+          videoId: "y5SqitZoVl0", // 替換為秀敏家 YouTube 影片 ID
+          btnText: "我想吃元祖知名度最高的「秀敏家」 🔥",
+          nextId: "d2_beach_train_songjeong",
+          chosenLabel: "已選定：方案 A【秀敏家】元祖炭火烤扇貝 🔥"
+        },
+        {
+          key: "dorim",
+          tag: "方案 B",
+          title: "🦪 道熙家（도림이네）・起司炭火烤扇貝老店",
+          meta: "平交道步行 3 分 ｜ 用餐約 60-75 分 ｜ 每人約 25,000 - 30,000 韓元",
+          desc: "在地老饕最愛的私房名店！肥美大扇貝鋪上厚厚起司與奶油，炭火現烤香脆多汁，阿姨服務親切熱情，附贈溫熱大醬湯超暖胃。",
+          videoId: "FTLGwxHc1bM", // 替換為道林家 YouTube 影片 ID
+          btnText: "我想吃起司爆濃、人情味滿滿的「道林家」 🦪",
+          nextId: "d2_beach_train_songjeong",
+          chosenLabel: "已選定：方案 B【道林家】起司炭火烤扇貝 🦪"
+        },
+        {
+          key: "haerim",
+          tag: "方案 C",
+          title: "🌊 海林家（해림이네）・海景大窗席 ＆ 鮮活烤海鮮",
+          meta: "平交道步行 4 分 ｜ 用餐約 60-75 分 ｜ 每人約 28,000 - 32,000 韓元",
+          desc: "坐擁紅白燈塔無敵海景！2樓視野寬敞通風極佳，現烤大扇貝、活跳鮑魚，搭配滿滿章魚與淡菜的鮮美海鮮拉麵，看海吃烤貝最享受！",
+          videoId: "oJB9_aw4UYI", // 替換為海林家 YouTube 影片 ID
+          btnText: "我想去風景開闊、看紅白燈塔的「海林家」 🌊",
+          nextId: "d2_beach_train_songjeong",
+          chosenLabel: "已選定：方案 C【海林家】海景窗席烤扇貝 🌊"
+        }
+      ]
+    },
+
+    "d2_beach_train_songjeong": {
+      type: "step",
+      day: "Day 2 ｜ 濱海復古列車",
+      title: "🚊 海雲台海岸列車（青沙浦 ➔ 松亭）",
+      transport: "地面復古景觀列車，全席面海座位",
+      cost: "單程票約 7,000 韓元 / 人（可刷 Visit Busan Pass 或現場購票）",
+      stay: "乘車約 12-15 分鐘",
+      note: "車廂內所有座位皆面向大海，全平路上下車，長輩免爬高",
+      desc: "不同於高架的膠囊小火車，海岸列車行駛於地面鐵軌。車廂設計為復古造型，兩排階梯式長條座椅全部朝向落地窗與大海。沿途緊貼海岸線行駛，近距離欣賞浪花與松林礁石，吹著冷氣一路抵達松亭站！",
+      videoId: "BNiQx3M7fnY",
+      nextBtnText: "抵達松亭！選擇午餐吧！ ➔",
+      nextId: "d2_cafe_coralani"
+    },
+
+    "d2_cafe_coralani": {
+      type: "step",
+      day: "Day 2 ｜ 下午茶",
+      title: "🌊 松亭 CORALANI（震撼階梯海景咖啡）",
+      transport: "搭海岸列車至松亭站轉計程車 ｜ 停留 70 分鐘",
+      cost: "每人約 16,000 韓元",
+      stay: "景觀座位放鬆 70 分鐘",
+      note: "設有電梯直達各樓層，長輩上下樓方便",
+      desc: "搭海岸列車到松亭，坐擁面向浩瀚大海的巨型階梯戶外沙發區，視野無敵開闊震撼！",
+      videoId: "BE-LP0XrLFY",
+      nextBtnText: "看晚餐烤肉行程 ➔",
+      nextId: "d2_bbq_dinner"
+    },
+
+    "d2_bbq_dinner": {
+      type: "step",
+      day: "Day 2 ｜ 晚餐",
+      title: "🥩 Choil-Yug 韓式烤肉",
+      transport: "搭乘計程車約 10-15 分鐘直達",
+      cost: "每人約 26,000 韓元",
+      stay: "用餐約 70-80 分鐘",
+      note: "店員專業桌邊代烤，免動手",
+      desc: "豬肉、牛肉大滿足，全程專人代烤，只需動筷吃肉，過癮又不費力！",
+      videoId: "xLnxvJ5o70E",
+      nextBtnText: "看晚餐後的體力抉擇 ➔",
+      nextId: "d2_night_decision"
+    },
+
+    "d2_night_decision": {
+      type: "decision",
+      title: "🤔 吃飽烤肉後，長輩今晚體力狀況如何？",
+      options: [
+        {
+          key: "seomyeon",
+          tag: "方案 A",
+          title: "🛍️ 西面地下街血拼逛街（體力充沛）",
+          meta: "地鐵 35 分 ｜ 逛街約 90 分 ｜ 地下街好買好逛",
+          desc: "前往釜山最熱鬧的流行商圈與平價服飾地下街，採買衣服與伴手禮。",
+          videoId: "fWVJZfNcVUY",
+          btnText: "精神很好！衝西面地下街逛街血拼 🛍️",
+          nextId: "d3_arte",
+          chosenLabel: "已選定：今晚衝西面地下街採買血拼 🛍️"
+        },
+        {
+          key: "park",
+          tag: "方案 B",
+          title: "🌊 釜山站北港親水公園漫步（想輕鬆休息）",
+          meta: "搭車直達飯店 ｜ 漫步 45 分 ｜ 寬闊平坦無階梯",
+          desc: "直接叫車回飯店放東西，走天橋到後方寬廣的北港親水公園吹海風、看跨海大橋夜景，安靜舒適。",
+          videoId: "vv01h40qC-Y",
+          btnText: "想放鬆休息，回飯店旁親水公園吹風 🌊",
+          nextId: "d3_arte",
+          chosenLabel: "已選定：回飯店旁北港親水公園散步吹海風 🌊"
+        }
+      ]
+    },
+
+    // ==========================================
+    // DAY 3
+    // ==========================================
+    "d3_arte": {
+      type: "step",
+      day: "Day 3 ｜ 上午光影藝術",
+      title: "Arte Museum Busan 沉浸式數位光影藝術展",
+      transport: "飯店搭計程車至影島約 15-18 分鐘 (約 8,000 KRW)",
+      cost: "成人門票約 22,000 韓元 / 人",
+      stay: "室內參觀約 90-120 分鐘",
+      note: "室內冷氣舒適全平路，拍照色彩極為瑰麗",
+      desc: "結合聲光與科技的巨型自然光影展，走進壯觀的數位瀑布與海洋，長輩拍照超好看、完全不費體力！",
+      videoId: "5pgBVrBZ4-4",
+      nextBtnText: "看午餐美味煎餅 ➔",
+      nextId: "d3_lunch"
+    },
+
+    "d3_lunch": {
+      type: "step",
+      day: "Day 3 ｜ 午餐",
+      title: "正確食堂・現煎海鮮煎餅與溫暖定食",
+      transport: "Arte Museum 展館旁步行 2 分鐘直達",
+      cost: "每人約 12,000 - 16,000 韓元",
+      stay: "用餐約 50-60 分鐘",
+      note: "緊鄰展館不用多走一步路，香酥煎餅必點",
+      desc: "現點現煎的招牌金黃酥脆海鮮蔥煎餅，搭配溫熱的大醬湯或豆腐定食，道地又飽足！",
+      videoId: "UWErpVAWBns",
+      nextBtnText: "前往白淺灘海景文化村 ➔",
+      nextId: "d3_huinnyeoul"
+    },
+
+    "d3_huinnyeoul": {
+      type: "step",
+      day: "Day 3 ｜ 下午海景漫步",
+      title: "白淺灘文化村 ＆ 懸崖海景咖啡館歇腳",
+      transport: "搭計程車約 12-15 分鐘 (約 6,500 KRW)",
+      cost: "咖啡甜點每人約 7,000 韓元",
+      stay: "拍照與喝咖啡放鬆約 90-120 分鐘",
+      note: "只走平緩的上層濱海步道，避免爬階梯",
+      desc: "被譽為釜山聖托里尼，沿著藍白彩繪牆漫步吹海風，走進面海的咖啡館坐著看海喝下午茶，非常療癒。",
+      videoId: "9VsS18AVMH8",
+      nextBtnText: "前往廣安里海水浴場 ➔",
+      nextId: "d3_gwangalli_beach"
+    },
+
+    "d3_gwangalli_beach": {
+      type: "step",
+      day: "Day 3 ｜ 傍晚海灘與採買",
+      title: "廣安里海灘漫步 ＆ 逛在地大型藥局",
+      transport: "計程車走跨海大橋約 25-30 分 (約 14,000 KRW)",
+      cost: "藥局依個人購買需求",
+      stay: "沙灘漫步與採買約 60 分鐘",
+      note: "藥局可採買酸痛貼布、保健食品與護膚品",
+      desc: "踩踩細軟的白沙灘，遠眺壯麗的廣安大橋，隨後順路到路邊大型連鎖藥局採買長輩必備好物。",
+      videoId: "jmVmZlsQIL8",
+      nextBtnText: "看廣安里晚餐與無人機秀 ➔",
+      nextId: "d3_drone_dinner"
+    },
+
+    "d3_drone_dinner": {
+      type: "step",
+      day: "Day 3 ｜ 晚宴與夜景秀",
+      title: "廣安里海景晚餐 ＆ 20:00 週六震撼無人機表演",
+      transport: "海灘旁餐廳步行即達，回程地鐵約 40 分返回飯店",
+      cost: "晚餐每人約 25,000 - 35,000 韓元 (無人機免費觀賞)",
+      stay: "晚餐 80 分鐘 ＋ 無人機秀 20 分鐘",
+      note: "冬令與夏令演出時間依現場公告為準，沙灘即可看",
+      desc: "坐在面海餐廳一邊吃美食，20:00 走到沙灘抬頭看數百架無人機在夜空中排出璀璨立體圖樣，震撼全場！",
+      videoId: "QMQRTLLJZyc",
+      nextBtnText: "完成第三天！進入第四天行程 ➔",
+      nextId: "d4_sujeong"
+    },
+
+    // ==========================================
+    // DAY 4
+    // ==========================================
+    "d4_sujeong": {
+      type: "step",
+      day: "Day 4 ｜ 上午復古散步",
+      title: "文化共感 水晶（日式近代登錄文化財茶室）",
+      transport: "飯店步行 15 分或地鐵 1 站至草梁站",
+      cost: "參觀門票/茶飲約 4,000 - 6,000 韓元",
+      stay: "日式庭院拍照、歇腳約 50-60 分鐘",
+      note: "IU MV 拍攝地，靜謐幽雅、木造回廊超好拍",
+      desc: "建於 1943 年的珍貴日式木造古蹟建築，踏在榻榻米上喝杯溫茶，體驗滿滿復古寧靜情調。",
+      videoId: "XhluD1TmceM",
+      nextBtnText: "前往西面站逛街與寄物 ➔",
+      nextId: "d4_seomyeon_shop"
+    },
+
+    "d4_seomyeon_shop": {
+      type: "step",
+      day: "Day 4 ｜ 下午商圈採買",
+      title: "西面站咖啡館 ＆ 地下街血拼大採買（先寄物）",
+      transport: "地鐵 1 號線草梁至西面約 12 分鐘直達",
+      cost: "地鐵寄物櫃約 3,000 - 5,000 韓元",
+      stay: "逛街採買約 2.5 - 3 小時",
+      note: "傍晚 17:30 前務必將戰利品鎖進置物櫃，上山一身輕",
+      desc: "在西面喝熱門咖啡，血拼平價服飾與伴手禮。血拼完直接將大包小包鎖入地鐵站寄物櫃，避免帶上山！",
+      videoId: "fWVJZfNcVUY",
+      nextBtnText: "出發前往荒嶺山看夜景 ➔",
+      nextId: "d4_hwangnyeongsan"
+    },
+
+    "d4_hwangnyeongsan": {
+      type: "step",
+      day: "Day 4 ｜ 黃昏夕陽與夜景",
+      title: "荒嶺山展望台／烽燧台（璀璨夕陽轉百萬夜景）",
+      transport: "西面叫計程車直達山頂停車場約 20 分 (建議包車原車等候)",
+      cost: "展望台免費 (包車來回約 35,000 - 45,000 KRW)",
+      stay: "走緩坡至觀景台拍照約 50-60 分鐘",
+      note: "山頂風大、體感溫度偏低，務必攜帶防風外套保暖",
+      desc: "釜山最壯觀制高點！站在山頂俯瞰夕陽沉入海面，緊接著廣安大橋與整座釜山市區燈火同時亮起，美到屏息！",
+      videoId: "s4cWFa8GgPI",
+      nextBtnText: "回西面取寄物與吃炸雞 ➔",
+      nextId: "d4_chicken_night"
+    },
+
+    "d4_chicken_night": {
+      type: "step",
+      day: "Day 4 ｜ 宵夜放鬆時光",
+      title: "回西面取戰利品 ➔ 飯店內享受外送韓式炸雞",
+      transport: "計程車下山取物，轉地鐵 12 分鐘回到飯店",
+      cost: "現炸炸雞＋飲料每套約 25,000 - 30,000 韓元",
+      stay: "飯店房間舒適放鬆享用",
+      note: "橋村 Kyochon 蜂蜜/蒜醬 或 BHC 芝士炸雞極推",
+      desc: "將大包小包帶回飯店換上舒適衣服，熱騰騰外送炸雞直接送到飯店，配上冰涼飲品，長輩大讚享受！",
+      videoId: "Wt6-2PysTY0",
+      nextBtnText: "完成第四天！進入第五天行程 ➔",
+      nextId: "d5_songdo_skywalk"
+    },
+
+    // ==========================================
+    // DAY 5
+    // ==========================================
+    "d5_songdo_skywalk": {
+      type: "step",
+      day: "Day 5 ｜ 上午海景走廊",
+      title: "松島天空步道（雲端散步路）＆ 搭乘松島海上纜車",
+      transport: "飯店搭計程車約 15-18 分鐘 (約 7,500 KRW)",
+      cost: "水晶透明底往返纜車每人約 22,000 韓元",
+      stay: "步道走拍 30 分鐘 ＋ 纜車跨海 15 分鐘",
+      note: "水晶車廂腳底全透明，宛如在海上飛翔",
+      desc: "漫步在向外延伸的松島天空步道，隨後搭乘跨越海灣的彩色水晶纜車直達對岸岩南公園，視野極為開闊！",
+      videoId: "ldRzV9RnopA",
+      nextBtnText: "前往松島龍宮吊橋 ➔",
+      nextId: "d5_yonggung_bridge"
+    },
+
+    "d5_yonggung_bridge": {
+      type: "step",
+      day: "Day 5 ｜ 上午懸崖奇景",
+      title: "松島龍宮空中吊橋 ＆ 與頂樓小王子合照",
+      transport: "出纜車站直接連通，平坦步道輕鬆好走",
+      cost: "吊橋門票每人 1,000 韓元",
+      stay: "約 60-75 分鐘",
+      note: "吊橋兩側護欄高且安全，岩南公園頂樓有小王子地標",
+      desc: "走在橫跨小島的龍宮吊橋上，腳下是拍打岩壁的海浪，走到觀景台與經典小王子及狐狸雕像開心大合照！",
+      videoId: "-Y-bzMRUFfk",
+      nextBtnText: "搭回程纜車前往國際市場 ➔",
+      nextId: "d5_songdo_kitchen"
+    },
+
+// ⬇️ 第 5 天松島廚房海景午餐卡片
+    "d5_songdo_kitchen": {
+      type: "step",
+      day: "Day 5 ｜ 絕美海景午餐",
+      title: "🍴 松島廚房（Songdo Kitchen）高空海景景觀餐廳",
+      transport: "纜車站步行 3-5 分鐘或計程車 1 分鐘直達飯店",
+      cost: "每人約 25,000 - 35,000 韓元",
+      stay: "慢享美食與看海放鬆約 60-80 分鐘",
+      note: "飯店高空落地窗直面松島跨海纜車，全平路電梯無障礙，環境極舒適",
+      desc: "走出纜車站直奔海景飯店高樓餐廳，大片落地窗俯瞰整座松島海灣與行駛中的纜車！品嚐精緻海鮮義大利麵、燉飯與排餐，長輩坐著看海歇腿超享受。",
+      videoId: "3mPysyENzt0", // 替換為實際 YouTube 影片 ID
+      nextBtnText: "吃飽搭計程車前往國際市場 ➔",
+      nextId: "d5_gukje_market" // 接續原本的國際市場
+    },
+
+    "d5_gukje_market": {
+      type: "step",
+      day: "Day 5 ｜ 下午傳統市場採買",
+      title: "國際市場 ＆ 富平罐頭市場血拼",
+      transport: "搭回程纜車後，計程車約 15 分鐘直達 (約 6,500 KRW)",
+      cost: "街頭小吃每人約 8,000 - 12,000 韓元",
+      stay: "市場雜貨採購與吃小吃約 2 小時",
+      note: "必吃現煎黑糖堅果甜餅、魚糕與辣炒年糕",
+      desc: "走入釜山最具歷史的傳統大市場，各色服飾、廚房鍋具與乾貨琳瑯滿目，邊走邊吃剛出爐的現煎黑糖餅！",
+      videoId: "kdOhuMNIfvg",
+      nextBtnText: "前往樂天百貨看免費夜景 ➔",
+      nextId: "d5_lotte_night"
+    },
+
+    "d5_lotte_night": {
+      type: "step",
+      day: "Day 5 ｜ 晚間夜景與超市",
+      title: "樂天百貨光復店寄物 ➔ 13F 空中花園夜景 ➔ 樂天超市採買",
+      transport: "市場步行 8 分鐘至樂天百貨光復店",
+      cost: "頂樓觀景台免費入場，超市伴手禮自由採買",
+      stay: "頂樓看景 30 分鐘 ＋ 超市補貨 60 分鐘",
+      note: "設有直達電梯與服務台行李寄放，長輩極輕鬆",
+      desc: "搭電梯登上 13 樓空中花園，免費俯瞰釜山塔與跨海大橋夜景！隨後至 B1 樂天超市打包泡麵、零食伴手禮回飯店。",
+      videoId: "JkDWNE31Mp4",
+      nextBtnText: "完成第五天！進入最後一天行程 ➔",
+      nextId: "d6_168_monorail"
+    },
+
+    // ==========================================
+    // DAY 6
+    // ==========================================
+    "d6_168_monorail": {
+      type: "step",
+      day: "Day 6 ｜ 歷史文化巡禮",
+      title: "飯店退房寄放行李 ➔ 草梁 168 階單軌列車體驗",
+      transport: "飯店退房寄物後，平路步行約 10 分鐘即達入口",
+      cost: "單軌列車免費搭乘 (在地公共福利設施)",
+      stay: "搭乘列車登頂、欣賞釜山港全景約 40-50 分鐘",
+      note: "超斜傾斜式可愛小電車，長輩免爬 168 階陡梯",
+      desc: "搭乘可愛的紅色單軌小電車緩緩爬升，從山頂俯瞰整座釜山舊城區與港口風貌，感受歷史痕跡。",
+      videoId: "_uf3ctNLqIk",
+      nextBtnText: "看午餐有哪些選擇 ➔",
+      nextId: "d6_lunch_seyeon"
+    },
+
+    "d6_lunch_seyeon": {
+      type: "step",
+      day: "Day 6 ｜ 登機前最後盛宴",
+      title: "🥩 機場旁・世延畜產（세연축산）韓牛與生五花烤肉",
+      transport: "飯店領行李後叫車直達約 25 分鐘 ｜ 吃飽叫車至航廈僅 5 分鐘",
+      cost: "每人約 25,000 - 35,000 韓元",
+      stay: "慢享烤肉約 60-75 分鐘",
+      note: "附專屬停車場平地無階梯，大件行李可直接推進店內集中寄放",
+      desc: "金海機場旁在地人激推的精肉食堂！批發市價挑選頂級韓牛與厚切五花肉，炭火現烤肉汁噴發，吃飽後車程只要5分鐘直達機場，優雅避開市區塞車。",
+      videoId: "rkzQZsND3ec", // 替換為實際 YouTube 影片 ID
+      nextBtnText: "吃飽前往金海國際機場 ➔",
+      nextId: "d6_airport_gohome"
+    },
+
+    "d6_airport_gohome": {
+      type: "step",
+      day: "Day 6 ｜ 滿載歸賦",
+      title: "回飯店領取大行李 ➔ Uber 直達金海國際機場返程",
+      transport: "飯店門口上車，叫車直達機場航廈約 35-45 分",
+      cost: "車資約 18,000 - 24,000 韓元 / 車",
+      stay: "提前 2.5 小時抵達機場辦理登機出境手續",
+      note: "直接叫大車或兩台車，大件戰利品行李搬運不費力",
+      desc: "回飯店領回寄放的行李，搭車直奔金海機場辦理退稅、出境手續，帶著滿滿的美好回憶平安回家！",
+      videoId: "InkifZ0MdX4",
+      nextBtnText: "🎉 恭喜完成六天五夜旅程！重新從頭開始 ↺",
+      nextId: "d1_arrival"
+    }
+  };
+
+  const timelineContainer = document.getElementById("itinerary-timeline");
+
+  // 播放影片邏輯（防報錯 153）
+  function playVideo(videoId) {
+    if (window.location.protocol === 'file:') {
+      window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+    } else {
+      const modal = document.getElementById("videoModal");
+      const iframe = document.getElementById("modalIframe");
+      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModalDirect() {
+    const modal = document.getElementById("videoModal");
+    const iframe = document.getElementById("modalIframe");
+    iframe.src = "";
+    modal.classList.remove("active");
+  }
+
+  function closeModal(e) {
+    if (e.target.id === "videoModal") {
+      closeModalDirect();
+    }
+  }
+
+  // 渲染行程與卡片
+  function renderItem(nodeId) {
+    const node = workflow[nodeId];
+    if (!node) return;
+
+    const el = document.createElement("div");
+
+    if (node.type === "step") {
+      el.className = "step-card";
+      el.innerHTML = `
+        <div class="step-badge">${node.day}</div>
+        <div class="step-title">${node.title}</div>
+        
+        <div class="meta-box">
+          <div class="meta-item"><span class="meta-label">🚗 交通動線</span><span class="meta-val">${node.transport}</span></div>
+          <div class="meta-item"><span class="meta-label">⏱️ 停留時間</span><span class="meta-val">${node.stay}</span></div>
+          <div class="meta-item"><span class="meta-label">💰 預估花費</span><span class="meta-val">${node.cost}</span></div>
+          <div class="meta-item"><span class="meta-label">💡 貼心備註</span><span class="meta-val">${node.note}</span></div>
+        </div>
+
+        <div class="desc-text">${node.desc}</div>
+
+        <!-- 9:16 防報錯動態封面影片卡 -->
+        <div class="video-card-box" onclick="playVideo('${node.videoId}')">
+          <img class="video-cover-img" src="https://img.youtube.com/vi/${node.videoId}/hqdefault.jpg" alt="影片預覽">
+          <div class="play-overlay">
+            <div class="play-btn-circle">▶</div>
+            <div class="play-tip">點擊直接播放現場短影音</div>
+          </div>
+        </div>
+
+        <button class="next-btn" onclick="goToNext('${nodeId}', '${node.nextId}', this)">
+          ${node.nextBtnText}
+        </button>
+      `;
+    } else if (node.type === "decision") {
+      el.className = "decision-hub";
+      let optionsHtml = "";
+
+      node.options.forEach((opt, idx) => {
+        optionsHtml += `
+          <div class="option-card">
+            <span class="option-tag">${opt.tag}</span>
+            <h3 style="margin: 4px 0 8px 0; font-size: 18px; color: #37474f;">${opt.title}</h3>
+            <div style="font-size: 14px; color: #546e7a; font-weight: 600; margin-bottom: 8px;">${opt.meta}</div>
+            <div class="desc-text" style="font-size: 15px;">${opt.desc}</div>
+            
+            <div class="video-card-box" onclick="playVideo('${opt.videoId}')">
+              <img class="video-cover-img" src="https://img.youtube.com/vi/${opt.videoId}/hqdefault.jpg" alt="影片預覽">
+              <div class="play-overlay">
+                <div class="play-btn-circle">▶</div>
+                <div class="play-tip">點擊看此方案現場畫面</div>
+              </div>
+            </div>
+
+            <button class="select-btn" onclick="makeChoice('${nodeId}', ${idx}, this)">
+              ${opt.btnText}
+            </button>
+          </div>
+        `;
+      });
+
+      el.innerHTML = `
+        <div class="decision-title">${node.title}</div>
+        <div>${optionsHtml}</div>
+      `;
+    }
+
+    timelineContainer.appendChild(el);
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // 推進下一個行程
+  function goToNext(currentId, nextId, btnElement) {
+    if (nextId === "d1_arrival") {
+      timelineContainer.innerHTML = "";
+      renderItem("d1_arrival");
+      return;
+    }
+    btnElement.style.display = "none";
+    const flag = document.createElement("div");
+    flag.className = "completed-flag";
+    flag.innerText = "✓ 已確認觀賞完畢";
+    btnElement.parentNode.appendChild(flag);
+
+    renderItem(nextId);
+  }
+
+  // 點選選項：直接跳轉後續接續行程
+  function makeChoice(decisionNodeId, optionIndex, btnElement) {
+    const decisionNode = workflow[decisionNodeId];
+    const selectedOption = decisionNode.options[optionIndex];
+
+    const hub = btnElement.closest(".decision-hub");
+    const allBtns = hub.querySelectorAll(".select-btn");
+    allBtns.forEach(b => b.style.display = "none");
+
+    const notice = document.createElement("div");
+    notice.className = "chosen-notice";
+    notice.innerText = `✓ ${selectedOption.chosenLabel}！正在為您開啟後續行程...`;
+    hub.appendChild(notice);
+
+    renderItem(selectedOption.nextId);
+  }
+
+  // 初始載入第一天第一個行程
+  renderItem("d1_arrival");
+</script>
+
+</body>
+</html>
